@@ -40,6 +40,7 @@ cd /opt/eigen
 git checkout 3.4.0
 mkdir build && cd build
 /opt/cmake-3.24/bin/cmake .. -DCMAKE_INSTALL_PREFIX=/opt/eigen-3.4
+make -j$(nproc)
 sudo make install
 ```
 
