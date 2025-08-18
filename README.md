@@ -56,7 +56,7 @@ For this example, download eee_03.
 ## Record the bag file:
 
 ```shell
-rosbag record /kfcloud /opt_odom -o {your_directory_for_the_recorded_bag}
+rosbag record /kfcloud /opt_odom -O {your_directory_for_the_recorded_bag}
 ```
 
 ## GenZ Launch:
