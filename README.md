@@ -11,6 +11,57 @@ This repository contains ROS 1 workspace that :
 
 ```shell
 sudo apt install -y nlohmann-json3-dev
+sudo apt install python3-catkin-tools
+sudo apt install libgflags-dev
+sudo apt install libgoogle-glog-dev
+```
+
+## livox_ros_driver
+```shell
+https://github.com/Livox-SDK/livox_ros_driver
+https://github.com/Livox-SDK/livox_ros_driver2
+```
+
+## Dependecies for Sophus and Ceres
+```shell
+cd ~
+wget https://github.com/Kitware/CMake/releases/download/v3.24.0/cmake-3.24.0.tar.gz
+tar -xzf cmake-3.24.0.tar.gz
+sudo mv cmake-3.24.0 /opt
+cd /opt/cmake-3.24.0
+./bootstrap --prefix=/opt/cmake-3.24
+make -j$(nproc)
+sudo make install
+
+cd ~
+git clone https://gitlab.com/libeigen/eigen.git
+cd eigen
+git checkout 3.4.0
+mkdir build && cd build
+/opt/cmake-3.24/bin/cmake .. -DCMAKE_INSTALL_PREFIX=/opt/eigen-3.4
+sudo make install
+```
+
+## Ceres and Sophus
+```shell
+cd ~
+git clone https://ceres-solver.googlesource.com/ceres-solver
+cd ceres-solver && git fetch --all --tags
+git checkout tags/2.1.0
+mkdir build && cd build
+/opt/cmake-3.24/bin/cmake .. \
+  -DEigen3_DIR=/opt/eigen-3.4/share/eigen3/cmake
+make -j$(nproc)
+sudo make install
+
+cd ~
+git clone https://github.com/strasdat/Sophus
+cd Sophus
+mkdir build && cd build
+/opt/cmake-3.24/bin/cmake .. \
+  -DEigen3_DIR=/opt/eigen-3.4/share/eigen3/cmake
+make -j$(nproc)
+sudo make install
 ```
 
 ## Building
