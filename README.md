@@ -110,7 +110,7 @@ For this example, download eee_03.
 rosbag record /kfcloud /opt_odom -O {your_directory_for_the_recorded_bag}
 ```
 
-## GenZ Launch:
+## SLICT Launch:
 
 ```shell
 cd /test_ws/
