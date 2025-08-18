@@ -1,8 +1,8 @@
-[submodule "src/Point-LIO"]
-	path = src/Point-LIO
-	url = https://github.com/hku-mars/Point-LIO.git
-[submodule "src/point-lio-to-hdmapping/src/3rdparty/LASzip"]
-	path = src/point-lio-to-hdmapping/src/3rdparty/LASzip
+[submodule "src/slict"]
+	path = src/slict
+	url = https://github.com/brytsknguyen/slict.git
+[submodule "src/slict-to-hdmapping/src/3rdparty/LASzip"]
+	path = src/slict-to-hdmapping/src/3rdparty/LASzip
 	url = https://github.com/LASzip/LASzip.git
 [submodule "src/livox_ros_driver"]
 	path = src/livox_ros_driver
