@@ -1,0 +1,18 @@
+[submodule "src/Point-LIO"]
+	path = src/Point-LIO
+	url = https://github.com/hku-mars/Point-LIO.git
+[submodule "src/point-lio-to-hdmapping/src/3rdparty/LASzip"]
+	path = src/point-lio-to-hdmapping/src/3rdparty/LASzip
+	url = https://github.com/LASzip/LASzip.git
+[submodule "src/livox_ros_driver"]
+	path = src/livox_ros_driver
+	url = https://github.com/brytsknguyen/livox_ros_driver
+[submodule "src/slict"]
+	path = src/slict
+	url = https://github.com/brytsknguyen/slict
+[submodule "src/ufomap"]
+	path = src/ufomap
+	url = https://github.com/brytsknguyen/ufomap
+[submodule "src/livox_ros_driver2"]
+	path = src/livox_ros_driver2
+	url = https://github.com/brytsknguyen/livox_ros_driver2
