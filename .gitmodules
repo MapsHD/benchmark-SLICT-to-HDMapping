@@ -9,7 +9,7 @@
 	url = https://github.com/brytsknguyen/livox_ros_driver
 [submodule "src/slict"]
 	path = src/slict
-	url = https://github.com/brytsknguyen/slict
+	url = https://github.com/MapsHD/slict.git
 [submodule "src/ufomap"]
 	path = src/ufomap
 	url = https://github.com/brytsknguyen/ufomap
