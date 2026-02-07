@@ -1,72 +1,126 @@
-ARG ROS_DISTRO=noetic
-FROM ros:${ROS_DISTRO}-ros-base
+FROM ubuntu:20.04
+
+SHELL ["/bin/bash", "-c"]
 ENV DEBIAN_FRONTEND=noninteractive
 
-SHELL ["/bin/bash", "-lc"]
-
-RUN apt-get update && apt-get install -y \
-    python3-colcon-common-extensions \
-    git \
-    build-essential \
-    cmake \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl gnupg2 lsb-release software-properties-common \
+    build-essential git cmake \
     python3-pip \
-    nlohmann-json3-dev \
+    libceres-dev libeigen3-dev \
     libpcl-dev \
-    libtbb-dev \
-    libceres-dev \
-    ros-${ROS_DISTRO}-pcl-ros \
-    ros-${ROS_DISTRO}-cv-bridge \
-    ros-${ROS_DISTRO}-image-transport \
-    ros-${ROS_DISTRO}-tf-conversions \
-    ros-${ROS_DISTRO}-sophus \
-    ros-${ROS_DISTRO}-rosbag
-RUN pip3 install rosbags
+    nlohmann-json3-dev \
+    tmux \
+    libusb-1.0-0-dev \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Livox SDK
-RUN git clone https://github.com/Livox-SDK/Livox-SDK.git /tmp/Livox-SDK && \
-    cd /tmp/Livox-SDK/build && \
-    cmake .. && make -j$(nproc) && make install && \
-    rm -rf /tmp/Livox-SDK
+RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
+    -o /usr/share/keyrings/ros-archive-keyring.gpg
 
-# Install Livox SDK2
-RUN git clone https://github.com/Livox-SDK/Livox-SDK2.git /tmp/Livox-SDK2 && \
-    cd /tmp/Livox-SDK2 && \
+RUN echo "deb [signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] \
+    http://packages.ros.org/ros/ubuntu $(lsb_release -cs) main" \
+    > /etc/apt/sources.list.d/ros1.list
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ros-noetic-desktop-full \
+    python3-rosdep \
+    python3-catkin-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt
+
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4.tar.gz && \
+    tar -xf cmake-3.26.4.tar.gz && cd cmake-3.26.4 && \
+    ./bootstrap --prefix=/opt/cmake-3.26.4 && \
+    make -j$(nproc)
+
+RUN git clone https://ceres-solver.googlesource.com/ceres-solver && \
+    cd ceres-solver && git fetch --all --tags && git checkout tags/2.1.0 && \
     mkdir build && cd build && \
-    cmake .. && make -j$(nproc) && make install && \
-    rm -rf /tmp/Livox-SDK2
+    /opt/cmake-3.26.4/bin/cmake .. -DCMAKE_INSTALL_PREFIX=/opt/eigen-3.4 && \
+    make -j$(nproc) && make install
 
-RUN mkdir -p /test_ws/src
-COPY src/ /test_ws/src
+RUN git clone https://gitlab.com/libeigen/eigen.git && \
+    cd eigen && git checkout 3.4.0 && \
+    mkdir build && cd build && \
+    /opt/cmake-3.26.4/bin/cmake .. -DCMAKE_INSTALL_PREFIX=/opt/eigen-3.4 && \
+    make -j$(nproc) && make install
 
-# Clone slict if submodule is empty
-RUN if [ ! -f /test_ws/src/slict/package.xml ]; then \
-      rm -rf /test_ws/src/slict && \
-      git clone --depth 1 https://github.com/MapsHD/slict.git /test_ws/src/slict; \
-    fi
+RUN git clone https://github.com/strasdat/Sophus && \
+    cd Sophus && mkdir build && cd build && \
+    /opt/cmake-3.26.4/bin/cmake .. -DSOPHUS_USE_BASIC_LOGGING=ON && make -j$(nproc)&& make install
 
-# Clone ufomap if submodule is empty
-RUN if [ ! -f /test_ws/src/ufomap/ufomap/CMakeLists.txt ]; then \
-      rm -rf /test_ws/src/ufomap && \
-      git clone --depth 1 https://github.com/brytsknguyen/ufomap /test_ws/src/ufomap; \
-    fi
+RUN git clone https://github.com/Livox-SDK/Livox-SDK.git && \
+    cd Livox-SDK && \
+    mkdir -p build && cd build && \
+    cmake .. && \
+    make -j$(nproc) && \
+    make install
 
-# Clone livox_ros_driver2 if submodule is empty
-RUN if [ ! -f /test_ws/src/livox_ros_driver2/package_ROS1.xml ]; then \
-      rm -rf /test_ws/src/livox_ros_driver2 && \
-      git clone --depth 1 https://github.com/brytsknguyen/livox_ros_driver2 /test_ws/src/livox_ros_driver2; \
-    fi
+RUN git clone https://github.com/Livox-SDK/Livox-SDK2.git && \
+    cd Livox-SDK2 && \
+    mkdir -p build && cd build && \
+    cmake .. && \
+    make -j$(nproc) && \
+    make install
 
-# Clone LASzip for converter
-RUN if [ ! -f /test_ws/src/slict-to-hdmapping/src/3rdparty/LASzip/CMakeLists.txt ]; then \
-      mkdir -p /test_ws/src/slict-to-hdmapping/src/3rdparty && \
-      rm -rf /test_ws/src/slict-to-hdmapping/src/3rdparty/LASzip && \
-      git clone --depth 1 https://github.com/LASzip/LASzip.git /test_ws/src/slict-to-hdmapping/src/3rdparty/LASzip; \
-    fi
+RUN mkdir -p /ws_livox/src
 
-RUN if [ ! -f /test_ws/src/livox_ros_driver/package.xml ]; then rm -rf /test_ws/src/livox_ros_driver && git clone https://github.com/brytsknguyen/livox_ros_driver /test_ws/src/livox_ros_driver; fi
-RUN if [ -f /test_ws/src/livox_ros_driver2/package_ROS1.xml ]; then cp /test_ws/src/livox_ros_driver2/package_ROS1.xml /test_ws/src/livox_ros_driver2/package.xml; fi
-RUN cd /test_ws && source /opt/ros/${ROS_DISTRO}/setup.bash && rosdep update && rosdep install --from-paths src --ignore-src -r -y || true
-# Build livox_ros_driver packages first (slict depends on them)
-RUN cd /test_ws && source /opt/ros/${ROS_DISTRO}/setup.bash && colcon build --packages-select livox_ros_driver livox_ros_driver2
-# Build remaining packages
-RUN cd /test_ws && source /opt/ros/${ROS_DISTRO}/setup.bash && source install/setup.bash && colcon build
+WORKDIR /ws_livox/src
+
+RUN git clone https://github.com/Livox-SDK/livox_ros_driver.git
+
+WORKDIR /ws_livox
+
+RUN source /opt/ros/noetic/setup.bash && \
+    catkin build
+
+RUN mkdir -p /ws_livox2/src
+
+WORKDIR /ws_livox2/src
+
+RUN git clone https://github.com/Livox-SDK/livox_ros_driver2.git
+
+WORKDIR /ws_livox2/src/livox_ros_driver2
+
+WORKDIR /ws_livox2
+
+RUN source /opt/ros/noetic/setup.bash && \
+    ./src/livox_ros_driver2/build.sh ROS1
+
+WORKDIR /ws_livox
+
+RUN source /opt/ros/noetic/setup.bash && \
+    catkin init && \
+    catkin config --extend /ws_livox2/devel && \
+    catkin clean -y && \
+    catkin build
+
+WORKDIR /ros_ws
+
+COPY ./src ./src
+
+RUN sed -i 's|<!-- <remap from="/livox/lidar"  to="/livox/lidar_hybrid"/> -->|<remap from="/livox/lidar_ouster"  to="/livox/pointcloud"/>|' /ros_ws/src/slict/launch/run_mcdviral.launch
+RUN sed -i 's|"/livox/lidar_ouster"|"/livox/pointcloud"|' /ros_ws/src/slict/config/mcdviral_livox_hhs.yaml && \
+    sed -i 's|"/vn200/imu"|"/livox/imu"|' /ros_ws/src/slict/config/mcdviral_livox_hhs.yaml
+
+
+RUN source /opt/ros/noetic/setup.bash && \
+    source /ws_livox2/devel/setup.bash && \
+    source /ws_livox/devel/setup.bash && \
+    catkin init && \
+    catkin build
+
+ARG UID=1000
+ARG GID=1000
+RUN groupadd -g $GID ros && \
+    useradd -m -u $UID -g $GID -s /bin/bash ros
+WORKDIR /ros_ws
+
+RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc && \
+    echo "source /ws_livox/devel/setup.bash" >> ~/.bashrc && \
+    echo "source /ws_livox2/devel/setup.bash" >> ~/.bashrc && \
+    echo "source /ros_ws/devel/setup.bash" >> ~/.bashrc
+
+CMD ["bash"]
