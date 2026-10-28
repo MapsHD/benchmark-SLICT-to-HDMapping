@@ -105,6 +105,12 @@ RUN sed -i 's|<!-- <remap from="/livox/lidar"  to="/livox/lidar_hybrid"/> -->|<r
 RUN sed -i 's|"/livox/lidar_ouster"|"/livox/pointcloud"|' /ros_ws/src/slict/config/mcdviral_livox_hhs.yaml && \
     sed -i 's|"/vn200/imu"|"/livox/imu"|' /ros_ws/src/slict/config/mcdviral_livox_hhs.yaml
 
+# Canonical-bag sensor profile (config + launch), kept out of the upstream slict
+# submodule: its own mcdviral_hhs.yaml / run_mcdviral.launch with only the sensor
+# description changed.
+COPY ./overlay/config/ ./src/slict/config/
+COPY ./overlay/launch/ ./src/slict/launch/
+
 
 RUN source /opt/ros/noetic/setup.bash && \
     source /ws_livox2/devel/setup.bash && \

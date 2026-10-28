@@ -61,6 +61,7 @@ docker run -it --rm \
   --network host \
   -e DISPLAY=$DISPLAY \
   -e ROS_HOME=/tmp/.ros \
+  -e DISABLE_ROS1_EOL_WARNINGS=1 \
   -u 1000:1000 \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   -v "$DATASET_HOST_PATH":"$DATASET_CONTAINER_PATH":ro \
@@ -75,7 +76,7 @@ docker run -it --rm \
 source /opt/ros/noetic/setup.bash
 source /ros_ws/devel/setup.bash
 export USER=ros
-roslaunch slict run_mcdviral.launch  use_sim_time:=true  use_prior_map:=0 bag_file:=/ros_ws/dataset/recorded-slict.bag config_file:=/ros_ws/src/slict/config/mcdviral_livox_hhs.yaml prior_map_dir:=/tmp; tmux wait-for -S BAG_DONE;
+roslaunch slict canonical.launch  use_sim_time:=true  use_prior_map:=0 bag_file:=/ros_ws/dataset/recorded-slict.bag config_file:=/ros_ws/src/slict/config/canonical.yaml prior_map_dir:=/tmp; tmux wait-for -S BAG_DONE;
 '\'' C-m
 
     # ---------- PANEL 2: rosbag record ----------
@@ -115,6 +116,7 @@ docker run -it --rm \
   --network host \
   -e DISPLAY="$DISPLAY" \
   -e ROS_HOME=/tmp/.ros \
+  -e DISABLE_ROS1_EOL_WARNINGS=1 \
   -u 1000:1000 \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   -v "$BAG_OUTPUT_HOST":"$BAG_OUTPUT_CONTAINER" \
